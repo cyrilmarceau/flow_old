@@ -1,8 +1,5 @@
 
-import logging
 from django.contrib.auth.base_user import BaseUserManager
-
-logger = logging.getLogger(__name__)
 
 class UserManager(BaseUserManager):
     """

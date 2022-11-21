@@ -1,7 +1,7 @@
 from typing import List
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
-from .managers import UserManager
+from auth_user.managers import UserManager
 
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(verbose_name='Adresse email', max_length=255, unique=True)
