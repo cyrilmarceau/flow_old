@@ -94,7 +94,9 @@ class PublicUserAPI(TestCase):
 
         res = self.client.post(TEST_TOKEN_URL, PAYLOAD)
 
-        self.assertIn('token', res.token)
+        self.assertIn('token', res.data)
+        self.assertIn('user', res.data)
+        
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_token_bad_credentials(self):
@@ -110,11 +112,11 @@ class PublicUserAPI(TestCase):
 
         create_user(**USER)
 
-        payload = {'email': 'johnn@example.com', 'password': 'invalidPassword'}
+        payload = {'email': 'john@example.com', 'password': 'invalidPassword'}
 
         res = self.client.post(TEST_TOKEN_URL, payload)
 
-        res.assertNotIn('token', res.data)
+        self.assertNotIn('token', res.data)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_token_blank_password(self):
@@ -125,8 +127,6 @@ class PublicUserAPI(TestCase):
         res = self.client.post(TEST_TOKEN_URL, payload)
 
         self.assertNotIn('token', res.data)
-        self.assertFalse('password')
-
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
 
