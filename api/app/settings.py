@@ -41,15 +41,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    'core',
     'rest_framework',
     'drf_spectacular',
-
-    'core',
     'auth_user',
-
     'flow_admin',
-
     ]
 
 
@@ -135,6 +131,10 @@ LOGGING = {
             'level': 'DEBUG',
         },
         'core': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+        'auth_user': {
             'handlers': ['console'],
             'level': 'DEBUG',
         }

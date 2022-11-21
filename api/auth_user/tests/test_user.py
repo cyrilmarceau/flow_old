@@ -9,7 +9,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 TEST_CREATE_USER_URL = reverse('user:create') # Termination endpoint
-
+TEST_TOKEN_URL = reverse('user:token')
 
 PAYLOAD_USER = {
     'email': 'john@example.com',
@@ -73,3 +73,60 @@ class PublicUserAPI(TestCase):
         
         # Check user is not create
         self.assertFalse(user_exist)
+
+    def test_create_token_for_user(self):
+        """"Test create token for valid credentials"""
+
+        USER = {
+            'email': 'john@example.com',
+            'firstname': 'John',
+            'lastname': 'Doe',
+            'phone': '0102030405',
+            'password': 'testTest'
+        }
+
+        create_user(**USER)
+
+        PAYLOAD = {
+            'email': PAYLOAD_USER.get('email'),
+            'password': PAYLOAD_USER.get('password')
+        }
+
+        res = self.client.post(TEST_TOKEN_URL, PAYLOAD)
+
+        self.assertIn('token', res.token)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+    def test_create_token_bad_credentials(self):
+        """Test return error if credential was invalid"""
+
+        USER = {
+            'email': 'john@example.com',
+            'firstname': 'John',
+            'lastname': 'Doe',
+            'phone': '0102030405',
+            'password': 'testTest'
+        }
+
+        create_user(**USER)
+
+        payload = {'email': 'johnn@example.com', 'password': 'invalidPassword'}
+
+        res = self.client.post(TEST_TOKEN_URL, payload)
+
+        res.assertNotIn('token', res.data)
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_token_blank_password(self):
+        """"Test return error if token was not set"""
+
+        payload = {'email': 'john@example.com', 'password': ''}
+
+        res = self.client.post(TEST_TOKEN_URL, payload)
+
+        self.assertNotIn('token', res.data)
+        self.assertFalse('password')
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+
