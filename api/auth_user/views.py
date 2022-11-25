@@ -1,29 +1,33 @@
 import logging
 
-from rest_framework import generics
+from rest_framework import generics, authentication, permissions
+from rest_framework.views import APIView
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .serializers import (
-    UserSerializer, AuthTokenserializer
+    UserSerializer,
+    AuthTokenserializer
 )
 
 logger = logging.getLogger(__name__)
 
 class CreateUserView(generics.CreateAPIView):
     """Create new user"""
+
     serializer_class = UserSerializer
 
 class CreateTokenView(ObtainAuthToken):
-    """"Create authen token for user"""
+    """Create authen token for user"""
 
     serializer_class = AuthTokenserializer
 
     def post(self, request, *args, **kwargs):
 
-        logger.debug('--- {}'.format(request.data))
+        # logger.debug('--- {}'.format(request.data))
 
         serializer = self.serializer_class(data=request.data,
                                            context={'request': request})
@@ -34,7 +38,7 @@ class CreateTokenView(ObtainAuthToken):
 
         token, created = Token.objects.get_or_create(user=user)
 
-        logger.debug(' -- created --', token)
+        # logger.debug(' -- created --', token)
 
         return Response({
             'token': token.key,
@@ -51,4 +55,13 @@ class CreateTokenView(ObtainAuthToken):
         })
 
 
+class ManageUserView(generics.RetrieveUpdateAPIView):
+    """Manage the authenticated user"""
 
+    serializer_class= UserSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        # logger.debug('self -- {}'.format(self.request.user))
+        return self.request.user

@@ -7,21 +7,32 @@ from django.contrib.auth import (
 from rest_framework.response import Response
 from rest_framework import serializers
 
-from rest_framework.serializers import ModelSerializer
 logger = logging.getLogger(__name__)
 
-class UserSerializer(ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     """Serializer for user object"""
 
     class Meta:
         model = get_user_model()
-        fields = ['id', 'email', 'firstname', 'password', 'lastname', 'phone', 'created_at', 'updated_at']
+        fields = ['id', 'email', 'firstname', 'password', 'lastname', 'phone', 'created_at', 'updated_at', 'last_login']
         extra_kwargs = {'password': {'write_only': True, 'min_length': 5}}
     
     def create(self, validated_data):
-        user = get_user_model().objects.create_user(**validated_data)
+        return get_user_model().objects.create_user(**validated_data)
     
-        return user
+    def update(self, instance, validated_data):
+        """Update and return user"""
+        
+        # logger.debug('--- validated_data {}'.format(validated_data))
+        password = validated_data.pop('password', None)
+
+        user = super().update(instance, validated_data)
+
+        if password:
+            user.set_password(password)
+            user.save()
+
+        return user  
 
 
 class AuthTokenserializer(serializers.Serializer):
@@ -36,7 +47,7 @@ class AuthTokenserializer(serializers.Serializer):
     def validate(self, attrs):
         """Validate the authenticated user"""
 
-        logger.debug(' -- attrs -- {}'.format(attrs))
+        # logger.debug(' -- attrs -- {}'.format(attrs))
 
         email = attrs.get('email')
         password = attrs.get('password')
